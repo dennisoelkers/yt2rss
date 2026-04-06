@@ -89,7 +89,7 @@ func (h *Handler) handleIndex(w http.ResponseWriter, r *http.Request) {
 			VideoCount: len(videos),
 			CreatedAt:  f.CreatedAt,
 			UpdatedAt:  f.UpdatedAt,
-			RSSURL:     h.baseURL + "/rss/" + f.ID,
+			RSSURL:     h.getBaseURL(r) + "/rss/" + f.ID,
 		}
 		data.Feeds = append(data.Feeds, fv)
 	}
@@ -171,7 +171,7 @@ func (h *Handler) handleFeedInfo(w http.ResponseWriter, r *http.Request) {
 			VideoCount:  len(videos),
 			CreatedAt:   feed.CreatedAt,
 			UpdatedAt:   feed.UpdatedAt,
-			RSSURL:      h.baseURL + "/rss/" + feed.ID,
+			RSSURL:      h.getBaseURL(r) + "/rss/" + feed.ID,
 		},
 		Videos: make([]VideoView, 0, len(videos)),
 	}
