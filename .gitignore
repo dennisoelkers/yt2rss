@@ -1,0 +1,13 @@
+# Binaries
+yt2rss
+bin/yt-dlp
+
+# Cache
+*.m4a
+*.tmp
+
+# Database
+*.db
+
+# OS
+.DS_Store
