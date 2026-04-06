@@ -102,7 +102,7 @@ func (c *Client) runYtDlp(args ...string) ([]byte, error) {
 }
 
 func (c *Client) GetPlaylistVideos(playlistURL string, limit int) (*models.Feed, []models.Video, error) {
-	data, err := c.runYtDlp(playlistURL)
+	data, err := c.runYtDlp("--flat-playlist", playlistURL)
 	if err != nil {
 		return nil, nil, fmt.Errorf("yt-dlp error: %w", err)
 	}
@@ -138,7 +138,7 @@ func (c *Client) GetPlaylistVideos(playlistURL string, limit int) (*models.Feed,
 }
 
 func (c *Client) GetChannelVideos(channelURL string, limit int) (*models.Feed, []models.Video, error) {
-	data, err := c.runYtDlp(channelURL)
+	data, err := c.runYtDlp("--flat-playlist", channelURL)
 	if err != nil {
 		return nil, nil, fmt.Errorf("yt-dlp error: %w", err)
 	}

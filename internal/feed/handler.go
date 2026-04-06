@@ -398,14 +398,45 @@ func (h *Handler) streamVideo(w http.ResponseWriter, videoID string) {
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.WriteHeader(http.StatusOK)
 
+	flusher, _ := w.(http.Flusher)
+	if flusher != nil {
+		flusher.Flush()
+	}
+
 	cmd := exec.Command("sh", "-c",
-		fmt.Sprintf("%s -q -f bestaudio --no-warnings -o - %s | ffmpeg -i - -c:a aac -b:a 128k -f mp4 -movflags frag_keyframe+default_base_moof pipe:1", h.ytDlpBin, videoURL))
+		fmt.Sprintf("%s -q -f bestaudio --no-warnings -o - %s 2>/dev/null | ffmpeg -i - -c:a aac -b:a 128k -f mp4 -movflags frag_keyframe+default_base_moof pipe:1 2>/dev/null", h.ytDlpBin, videoURL))
 
-	cmd.Stdout = w
-	cmd.Stderr = nil
-
-	if err := cmd.Run(); err != nil {
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
 		log.Printf("Streaming error: %v", err)
+		return
+	}
+
+	if err := cmd.Start(); err != nil {
+		log.Printf("Streaming error: %v", err)
+		return
+	}
+
+	buf := make([]byte, 32*1024)
+	for {
+		n, readErr := stdout.Read(buf)
+		if n > 0 {
+			if _, writeErr := w.Write(buf[:n]); writeErr != nil {
+				cmd.Process.Kill()
+				return
+			}
+			if flusher != nil {
+				flusher.Flush()
+			}
+		}
+		if readErr != nil {
+			break
+		}
+	}
+
+	cmd.Wait()
+	if flusher != nil {
+		flusher.Flush()
 	}
 }
 
